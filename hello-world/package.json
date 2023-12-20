@@ -1,5 +1,11 @@
-const displayMessage = () => {
-    console.log("Hello! This is my first node.js project")
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Poojitha",
+  "license": "ISC"
 }
-
-displayMessage();
