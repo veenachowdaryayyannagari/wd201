@@ -1,98 +1,72 @@
-"use strict";
-const { Model } = require("sequelize");
-const Sequelize = require("sequelize");
-const Op = Sequelize.Op;
-
-module.exports = (sequelize, DataTypes) => {
-  class Todo extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      Todo.belongsTo(models.User, {
-        foreignKey: "userID",
-      });
-      // define association here
+const todoList = () => {
+    all = []
+    const add = (todoItem) => {
+      all.push(todoItem)
     }
-
-    static addTodo({ title, dueDate, userId }) {
-      return this.create({
-        title: title,
-        dueDate: dueDate,
-        completed: false,
-        userID: userId,
-      });
+    const markAsComplete = (index) => {
+      all[index].completed = true
     }
-
-    static async remove(id, userId) {
-      return this.destroy({ where: { id: id, userID: userId } });
+  
+    const overdue = () => {
+     return all.filter((item)=>item.dueDate< today)
     }
-
-    static async update({ title, dueDate, completed }) {
-      return this.update({
-        title: title,
-        dueDate: dueDate,
-        completed: completed,
-      });
+  
+    const dueToday = () => {
+       return all.filter((item)=>item.dueDate=== today)
     }
-
-    static async getDueToday(userID) {
-      const d = new Date().toLocaleDateString("en-CA");
-      const today = await this.findAll({
-        where: { dueDate: { [Op.eq]: d }, completed: false, userID: userID },
-      });
-      return today;
+  
+    const dueLater = () => {
+      return all.filter((item)=>item.dueDate> today)
     }
-
-    static async getDueLater(userID) {
-      const d = new Date().toLocaleDateString("en-CA");
-      const later = await this.findAll({
-        where: { dueDate: { [Op.gt]: d }, completed: false, userID: userID },
-      });
-      return later;
+  
+    const toDisplayableList = (list) => {
+       let res= list.map(item=>`${item.completed ? '[x] ':'[ ] '}${item.title} ${item.dueDate===today ? " ":item.dueDate}`).join("\n")
+          return res;
     }
-
-    static async getOverDue(userID) {
-      const d = new Date().toLocaleDateString("en-CA");
-      const overdue = await this.findAll({
-        where: { dueDate: { [Op.lt]: d }, completed: false, userID: userID },
-      });
-      return overdue;
-    }
-
-    static async getCompleted(userID) {
-      const complete = await this.findAll({
-        where: { completed: true, userID: userID },
-      });
-      return complete;
-    }
-
-    markAsCompleted() {
-      return this.update({ completed: true });
-    }
-
-    setCompletionStatus(status) {
-      return this.update({ completed: status });
-    }
+    return { all, add, markAsComplete, overdue, dueToday, dueLater, toDisplayableList };
   }
-  Todo.init(
-    {
-      title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notNull: true,
-        },
-      },
-      dueDate: DataTypes.DATEONLY,
-      completed: DataTypes.BOOLEAN,
-    },
-    {
-      sequelize,
-      modelName: "Todo",
-    }
-  );
-  return Todo;
-};
+  
+  // ####################################### #
+  // DO NOT CHANGE ANYTHING BELOW THIS LINE. #
+  // ####################################### #
+  
+  const todos = todoList();
+  
+  const formattedDate = d => {
+    return d.toISOString().split("T")[0]
+  }
+  
+  var dateToday = new Date()
+  const today = formattedDate(dateToday)
+  const yesterday = formattedDate(
+    new Date(new Date().setDate(dateToday.getDate() - 1))
+  )
+  const tomorrow = formattedDate(
+    new Date(new Date().setDate(dateToday.getDate() + 1))
+  )
+  
+  todos.add({ title: 'Submit assignment', dueDate: yesterday, completed: false })
+  todos.add({ title: 'Pay rent', dueDate: today, completed: true })
+  todos.add({ title: 'Service Vehicle', dueDate: today, completed: false })
+  todos.add({ title: 'File taxes', dueDate: tomorrow, completed: false })
+  todos.add({ title: 'Pay electric bill', dueDate: tomorrow, completed: false })
+  
+  console.log("My Todo-list\n\n")
+  
+  console.log("Overdue")
+  var overdues = todos.overdue()
+  var formattedOverdues = todos.toDisplayableList(overdues)
+  console.log(formattedOverdues);
+  console.log("\n\n")
+  
+  console.log("Due Today")
+  let itemsDueToday = todos.dueToday()
+  let formattedItemsDueToday = todos.toDisplayableList(itemsDueToday)
+  console.log(formattedItemsDueToday);
+  console.log("\n\n")
+  
+  console.log("Due Later")
+  let itemsDueLater = todos.dueLater()
+  let formattedItemsDueLater = todos.toDisplayableList(itemsDueLater)
+  console.log(formattedItemsDueLater);
+  console.log("\n\n")
