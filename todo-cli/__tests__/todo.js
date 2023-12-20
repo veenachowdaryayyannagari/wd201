@@ -1,8 +1,8 @@
-const TodoList = require("../todo");
+const todoList = require("../todo");
 let todos;
 
 beforeEach(() => {
-  todos = new TodoList(); // Assuming TodoList is a constructor function
+  todos = todoList();
 });
 
 describe("TodoList Test Suite", () => {
@@ -42,8 +42,38 @@ describe("TodoList Test Suite", () => {
       completed: false,
     };
     todos.add(overdueAdd);
-    expect(todos.overdue().length).toBe(overDueTodoItemsCount + 1);
+    expect(todos.overdue().length).toEqual(overDueTodoItemsCount + 1);
   });
 
   test("Should retrieve due today items", () => {
-    const 
+    const dateToday = new Date();
+    const formattedDate = (d) => d.toISOString().split("T")[0];
+    const today = formattedDate(dateToday);
+
+    const DueTodayTodoItemsCount = todos.dueToday().length;
+    const todayAdd = {
+      title: "Complete this milestone",
+      dueDate: today,
+      completed: false,
+    };
+    todos.add(todayAdd);
+    expect(todos.dueToday().length).toEqual(DueTodayTodoItemsCount + 1);
+  });
+
+  test("Should retrieve due later items", () => {
+    const dateToday = new Date();
+    const formattedDate = (d) => d.toISOString().split("T")[0];
+    const tomorrow = formattedDate(
+      new Date(dateToday.setDate(dateToday.getDate() + 1)),
+    );
+
+    const DueLaterTodoItemsCount = todos.dueLater().length;
+    const laterAdd = {
+      title: "Prepare for sem exams",
+      dueDate: tomorrow,
+      completed: false,
+    };
+    todos.add(laterAdd);
+    expect(todos.dueLater().length).toEqual(DueLaterTodoItemsCount + 1);
+  });
+});
